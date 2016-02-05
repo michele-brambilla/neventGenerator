@@ -18,7 +18,7 @@ zmqReader: $(ROBJ)
 
 clean:
 	- rm *.o
-	- rm zmqGenerator
+	- rm zmqGenerator zmqReader
 
 
 

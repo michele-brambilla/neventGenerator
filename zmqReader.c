@@ -24,7 +24,10 @@ int main(int argc, char *argv[])
   char headerData[1024];
   char *pPtr, *pEnd;
   int64_t *dataBuffer = NULL, rtimestamp[2];
-  unsigned int dataBufferSize = 0;
+  ///////////////////////
+  // hack
+  int32_t *tof;
+  unsigned int dataBufferSize = 0, tofBufferSize = 0;
 
   if(argc < 2) {
     printf("usage:\n\tzmqReader endpoint\n\twith endpoint being in the format: tcp://host:port\n");
@@ -49,6 +52,9 @@ int main(int argc, char *argv[])
     } else {
       headerData[bytesRead] = '\0';
     }
+
+    /* printf("headerData: %s\n",headerData); */
+
     /*
       This bit is for synchronisation: we may connect to the server 
       mid-message...
@@ -60,6 +66,7 @@ int main(int argc, char *argv[])
       /* printf("Global header: %s\n",headerData); */
       byteCount += bytesRead;
     }
+
     pPtr = strstr(headerData, "pulse_id\":");
     if(pPtr != NULL){
       pPtr += strlen( "pulse_id\":");
@@ -80,6 +87,7 @@ int main(int argc, char *argv[])
     headerData[bytesRead] = '\0';
     byteCount += bytesRead;
     /* printf("Data header: %s\n",headerData); */
+
     pPtr = strstr(headerData, "shape\":[");
     if(pPtr != NULL){
       pPtr += strlen("shape\":[");
@@ -97,12 +105,21 @@ int main(int argc, char *argv[])
       if(dataBuffer != NULL){
 	free(dataBuffer);
       }
-      dataBuffer = malloc(nEvents*sizeof(int64_t));
-      if(dataBuffer == NULL){
-	printf("Out of memory allocating data buffer\n");
+      dataBufferSize = nEvents*sizeof(int64_t);
+      dataBuffer = malloc(dataBufferSize);
+
+      /////////////////////////////
+      // hack
+      tofBufferSize = nEvents*sizeof(int32_t);
+      tof = malloc(tofBufferSize);
+
+      if(dataBuffer == NULL || tof == NULL ){
+	printf("Out of memory allocating data buffers\n");
 	return 1;
       }
-      dataBufferSize = nEvents*sizeof(int64_t);
+
+
+
     }
 
     /*
@@ -110,8 +127,21 @@ int main(int argc, char *argv[])
     */
     byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
     byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
+
+    //////////////////////
+    // hack
+    if(strstr(argv[2],"focus") != NULL){
+      byteCount += zmq_recv(pullSocket,tof,sizeof(rtimestamp),0);
+    }
+
     byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
     byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
+
+    //////////////////////
+    // hack
+    if(strstr(argv[2],"focus") != NULL){
+      byteCount += zmq_recv(pullSocket,tof,sizeof(rtimestamp),0);
+    }
 
     /*
       do the statistics
