@@ -151,7 +151,9 @@ int main(int argc, char *argv[])
 
       //////////////////
       // hack (correct here?)
-      byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
+      if(strstr(argv[1],"focus") != NULL){
+        byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
+      }
 
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
 
