@@ -12,11 +12,14 @@ typedef struct {
   unsigned long count;
   int64_t *detectorID;
   int32_t *timeStamp;
+  /////////////////////
+  // hack
+  int32_t *tofMonitor;
 } neventArray, *pNEventArray;
 
 
 pNEventArray createNEventArray(unsigned long count);
 void killNEventArray(pNEventArray *self);
-pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor);
+pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor, const int);
 
 #endif

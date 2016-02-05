@@ -55,7 +55,16 @@ int main(int argc, char *argv[])
   */
   if(argc > 3){
     multiplier = atoi(argv[3]);
-    tmp = multiplyNEventArray(data,multiplier);
+
+    /////////////////
+    // hack
+    if(strstr(argv[1],"amor") != NULL){
+      tmp = multiplyNEventArray(data,multiplier,0);
+    }
+    else {
+      tmp = multiplyNEventArray(data,multiplier,1);
+    }
+
     if(tmp == NULL){
       printf("Failed to multiply event array by %d\n", multiplier);
     } else {
@@ -69,13 +78,23 @@ int main(int argc, char *argv[])
   /*
     create dataHeader
   */
-  snprintf(dataHeader,sizeof(dataHeader),
-	   "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
-	   data->count, data->count);
+  /////////////////
+  // hack
+  if(strstr(argv[1],"amor") != NULL){
+    snprintf(dataHeader,sizeof(dataHeader),
+             "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
+             data->count, data->count);
+  }
+  else {
+    snprintf(dataHeader,sizeof(dataHeader),
+             "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ], [{\"name\":\"TOFmonitor\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
+             data->count, data->count, data->count);
+  }
   MD5Init(&md5Context);
   MD5Update(&md5Context,dataHeader,strlen(dataHeader));
   MD5Final(md5Hash,&md5Context);
   /* printf("%s, hash =%x\n",dataHeader,md5Hash);  */
+
 
   /*
     initialize 0MQ
@@ -121,11 +140,24 @@ int main(int argc, char *argv[])
 	send the stuff away 
       */
       byteCount += zmq_send(pushSocket,globalHeader,strlen(globalHeader),ZMQ_SNDMORE);
+
       byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
+
       byteCount += zmq_send(pushSocket,data->detectorID,data->count*sizeof(int64_t),ZMQ_SNDMORE);
+
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), ZMQ_SNDMORE);
+
       byteCount += zmq_send(pushSocket,data->timeStamp,data->count*sizeof(int32_t),ZMQ_SNDMORE);
+
+      //////////////////
+      // hack (correct here?)
+      byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
+
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
+
+
+
+
 
       /*
 	handle statistics
