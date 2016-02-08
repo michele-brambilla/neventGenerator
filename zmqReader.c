@@ -12,6 +12,7 @@
 #include <time.h>
 #include <zmq.h>
 
+#include "neventArray.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,11 +24,16 @@ int main(int argc, char *argv[])
   time_t statTime;
   char headerData[1024];
   char *pPtr, *pEnd;
-  int64_t *dataBuffer = NULL, rtimestamp[2];
+  //  int64_t *dataBuffer = NULL, rtimestamp[2];
   ///////////////////////
   // hack
-  int32_t *tof;
-  unsigned int dataBufferSize = 0, tofBufferSize = 0;
+  int64_t rtimestamp[2];
+  int32_t *dataBuffer = NULL, *dataTimeStamp = NULL;
+  float *dataToF = NULL;
+  unsigned int dataBufferSize = 0, dataToFSize = 0, dataTimeStampSize = 0;
+  /////////////////
+  // hack
+  int do_it = 1,i,j;
 
   if(argc < 2) {
     printf("usage:\n\tzmqReader endpoint\n\twith endpoint being in the format: tcp://host:port\n");
@@ -42,6 +48,8 @@ int main(int argc, char *argv[])
   status = zmq_connect(pullSocket,argv[1]);
 
   statTime = time(NULL);
+
+  
   while(1) {
     /*
       receive global header and pull out pulseID
@@ -105,21 +113,21 @@ int main(int argc, char *argv[])
       if(dataBuffer != NULL){
 	free(dataBuffer);
       }
-      dataBufferSize = nEvents*sizeof(int64_t);
+      //      dataBufferSize = nEvents*sizeof(int64_t);
+      dataBufferSize = nEvents*sizeof(int32_t);
       dataBuffer = malloc(dataBufferSize);
 
       /////////////////////////////
       // hack
-      tofBufferSize = nEvents*sizeof(int32_t);
-      tof = malloc(tofBufferSize);
+      dataTimeStampSize = nEvents*sizeof(int32_t);
+      dataTimeStamp = malloc(dataTimeStampSize);
+      dataToFSize = nEvents*sizeof(float);
+      dataToF = malloc(dataToFSize);
 
-      if(dataBuffer == NULL || tof == NULL ){
+      if(dataBuffer == NULL || dataToF == NULL || dataTimeStamp == NULL){
 	printf("Out of memory allocating data buffers\n");
 	return 1;
       }
-
-
-
     }
 
     /*
@@ -128,20 +136,19 @@ int main(int argc, char *argv[])
     byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
     byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
 
-    //////////////////////
-    // hack
-    if(strstr(argv[2],"focus") != NULL){
-      byteCount += zmq_recv(pullSocket,tof,sizeof(rtimestamp),0);
-    }
-
-    byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
+    byteCount += zmq_recv(pullSocket,dataTimeStamp,dataTimeStampSize,0);
     byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
 
     //////////////////////
     // hack
-    if(strstr(argv[2],"focus") != NULL){
-      byteCount += zmq_recv(pullSocket,tof,sizeof(rtimestamp),0);
+    if( strstr(argv[2],"focus") != NULL){
+      byteCount += zmq_recv(pullSocket,dataToF,dataToFSize,0);
+      byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
     }
+
+    for(i = 0;i<10;++i)
+      printf("%d\t",dataToF[i]);
+    printf("\n");
 
     /*
       do the statistics
@@ -155,13 +162,15 @@ int main(int argc, char *argv[])
       nCount = 0;
       statTime = time(NULL);
     }
+    
   }
-
+      
   /*
     never get here, but close it anyway
   */
   zmq_close(pullSocket);
   zmq_ctx_destroy(zmqContext);
+
 
   return 0;
 

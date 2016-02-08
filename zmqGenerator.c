@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
   time_t statTime;
   int64_t rtimestamp[2];
   unsigned int multiplier = 1;
+  int i;
 
   if(argc < 3) {
     printf("usage:\n\tzmqGenerator nexusfile portNo [multiplier]\n");
@@ -49,6 +50,9 @@ int main(int argc, char *argv[])
     printf("Failed to load NeXus data to events\n");
   }
 
+  /* for(i = 0;i<846;++i) */
+  /*   printf("%d\n",data->tofMonitor[i]); */
+  /* printf("\n"); */
 
   /*
     handle multiplier
@@ -147,12 +151,6 @@ int main(int argc, char *argv[])
 
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), ZMQ_SNDMORE);
 
-      //////////////////
-      // hack (correct here?)
-      if(strstr(argv[1],"focus") != NULL){
-        byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
-      }
-
       byteCount += zmq_send(pushSocket,data->timeStamp,data->count*sizeof(int32_t),ZMQ_SNDMORE);
 
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
@@ -161,10 +159,12 @@ int main(int argc, char *argv[])
       // hack (correct here?)
       if(strstr(argv[1],"focus") != NULL){
         byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
+        byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
       }
-
-
-
+      
+      for(i = 0;i<10;++i)
+        printf("%d\t",data->tofMonitor[i]);
+      printf("\n");
 
 
       /*
