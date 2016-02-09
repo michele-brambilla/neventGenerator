@@ -45,8 +45,13 @@ int main(int argc, char *argv[])
    * initialize 0mq
    */
   zmqContext = zmq_ctx_new();
-  pullSocket = zmq_socket(zmqContext,RECV_TYPE);
-  //   pullSocket = zmq_socket(zmqContext,ZMQ_PULL);
+#if COMM_TYPE == PULLPUSH
+  pullSocket = zmq_socket(zmqContext,ZMQ_PULL);
+#elif COMM_TYPE == PAIR
+  pullSocket = zmq_socket(zmqContext,ZMQ_PAIR);
+#elif COMM_TYPE == PUBSUB
+  pullSocket = zmq_socket(zmqContext,ZMQ_SUB);
+#endif
   status = zmq_connect(pullSocket,argv[1]);
 
   statTime = time(NULL);

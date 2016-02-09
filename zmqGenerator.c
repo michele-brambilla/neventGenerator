@@ -86,7 +86,13 @@ int main(int argc, char *argv[])
     initialize 0MQ
   */
   zmqContext = zmq_ctx_new();
-  pushSocket = zmq_socket(zmqContext,SEND_TYPE);
+#if COMM_TYPE == PULLPUSH
+  pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
+#elif COMM_TYPE == PAIR
+  pushSocket = zmq_socket(zmqContext,ZMQ_PAIR);
+#elif COMM_TYPE == PUBSUB
+  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
+#endif
   snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
   zmq_bind(pushSocket,sockAddress);
 
