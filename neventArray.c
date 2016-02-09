@@ -19,7 +19,6 @@ pNEventArray createNEventArray(unsigned long count)
   result->count = count;
   result->detectorID = malloc(count*sizeof(int64_t));
   result->timeStamp = malloc(count*sizeof(int32_t));
-  result->tofMonitor = malloc(count*sizeof(int32_t));
   if(result->detectorID == NULL || result->timeStamp == NULL){
     killNEventArray(&result);
     return NULL;
@@ -45,7 +44,7 @@ void killNEventArray(pNEventArray *pself)
 /*-----------------------------------------------------------*/
 /////////////////
 // hack
-pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor, const int isFOCUS)
+pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor)
 {
   pNEventArray result;
   int i;
@@ -59,12 +58,6 @@ pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor, const
 	   source->detectorID, source->count*sizeof(int64_t));
     memcpy(result->timeStamp + factor*source->count,
 	   source->timeStamp, source->count*sizeof(int32_t));
-    /////////////////
-    // hack
-    if(isFOCUS) {
-      memcpy(result->tofMonitor + factor*source->count,
-             source->tofMonitor, source->count*sizeof(int32_t));
-    }
   }
   return result;
 }

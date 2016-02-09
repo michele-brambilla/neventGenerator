@@ -12,6 +12,8 @@
 #include "posix_timers.h"
 #include "md5.h"
 
+#include "config.h"
+
 static unsigned long pulseID = 0L; 
 
 void timer_func() 
@@ -50,24 +52,12 @@ int main(int argc, char *argv[])
     printf("Failed to load NeXus data to events\n");
   }
 
-  /* for(i = 0;i<846;++i) */
-  /*   printf("%d\n",data->tofMonitor[i]); */
-  /* printf("\n"); */
-
   /*
     handle multiplier
   */
   if(argc > 3){
     multiplier = atoi(argv[3]);
-
-    /////////////////
-    // hack
-    if(strstr(argv[1],"amor") != NULL){
-      tmp = multiplyNEventArray(data,multiplier,0);
-    }
-    else {
-      tmp = multiplyNEventArray(data,multiplier,1);
-    }
+    tmp = multiplyNEventArray(data,multiplier);
 
     if(tmp == NULL){
       printf("Failed to multiply event array by %d\n", multiplier);
@@ -82,18 +72,10 @@ int main(int argc, char *argv[])
   /*
     create dataHeader
   */
-  /////////////////
-  // hack
-  if(strstr(argv[1],"amor") != NULL){
-    snprintf(dataHeader,sizeof(dataHeader),
-             "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
-             data->count, data->count);
-  }
-  else {
-    snprintf(dataHeader,sizeof(dataHeader),
-             "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ], [{\"name\":\"TOFmonitor\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
-             data->count, data->count, data->count);
-  }
+  snprintf(dataHeader,sizeof(dataHeader),
+           "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
+           data->count, data->count);
+  
   MD5Init(&md5Context);
   MD5Update(&md5Context,dataHeader,strlen(dataHeader));
   MD5Final(md5Hash,&md5Context);
@@ -104,7 +86,7 @@ int main(int argc, char *argv[])
     initialize 0MQ
   */
   zmqContext = zmq_ctx_new();
-  pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
+  pushSocket = zmq_socket(zmqContext,SEND_TYPE);
   snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
   zmq_bind(pushSocket,sockAddress);
 
@@ -154,19 +136,7 @@ int main(int argc, char *argv[])
       byteCount += zmq_send(pushSocket,data->timeStamp,data->count*sizeof(int32_t),ZMQ_SNDMORE);
 
       byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
-
-      //////////////////
-      // hack (correct here?)
-      if(strstr(argv[1],"focus") != NULL){
-        byteCount += zmq_send(pushSocket,data->tofMonitor,data->count*sizeof(int32_t),ZMQ_SNDMORE);
-        byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
-      }
       
-      for(i = 0;i<10;++i)
-        printf("%d\t",data->tofMonitor[i]);
-      printf("\n");
-
-
       /*
 	handle statistics
       */

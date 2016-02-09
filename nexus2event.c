@@ -102,12 +102,12 @@ static pNEventArray loadAMOR(char *filename)
 static pNEventArray loadFOCUS(char *filename)
 {
   NXhandle handle;
-  int32_t dim[2];
+  int32_t dim[2+1];
   int status, i, j, k, l, nCount, rank, type;
   unsigned int size, offset;
   int32_t *data = NULL;
   float *tof = NULL;
-  float *tof_monitor = NULL;
+  int32_t *tof_monitor = NULL;
   int32_t iTof;
   int32_t mTof;
   unsigned long nEvents;
@@ -127,15 +127,15 @@ static pNEventArray loadFOCUS(char *filename)
   }
   NXgetinfo(handle,&rank,dim,&type);
 
-  printf("%d %d %d\n",rank,dim[0],dim[1]);
-
   for(i = 1, size = dim[0]; i < 2; i++){
     size *= dim[i];
   }
+  dim[rank] = dim[rank-1];
+
   data = malloc(size*sizeof(int32_t));
   tof = malloc(dim[1]*sizeof(float));
-  tof_monitor = malloc(dim[1]*sizeof(float));
-  if(data == NULL || tof == NULL){
+  tof_monitor = malloc(dim[1]*sizeof(int32_t));
+  if(data == NULL || tof == NULL || tof_monitor == NULL){
     printf("failed to allocate memory for NeXus data\n");
     return NULL;
   }
@@ -157,7 +157,8 @@ static pNEventArray loadFOCUS(char *filename)
   
   NXclose(&handle);
 
-  nEvents = countNeutrons(data,size);
+  nEvents = countNeutrons(data,size) + countNeutrons(tof_monitor,dim[2]);
+
   evData = createNEventArray(nEvents);
   if(evData == NULL){
     return NULL;
@@ -165,44 +166,33 @@ static pNEventArray loadFOCUS(char *filename)
   printf("%s contains %ld neutrons\n",filename,nEvents);
 
   nEvents = 0;
-  /* for(i = 0; i < dim[0]; i++){ */
-  /*   for(j = 0; j < dim[1]; j++){ */
-  /*     detID++; */
-  /*     offset = i*dim[1]*dim[2] + j*dim[2]; */
-  /*     for(k = 0; k < dim[2]; k++){ */
-  /*       nCount = data[offset+k]; */
-  /*       iTof = round(tof[k]/10.); */
-  /*       ///////////// */
-  /*       // hack */
-  /*       mTof = tof_monitor[k]; */
-  /*       for(l = 0; l < nCount; l++){ */
-  /*         evData->detectorID[nEvents] = detID; */
-  /*         evData->timeStamp[nEvents] = iTof; */
-  /*         ///////////// */
-  /*         // hack */
-  /*         evData->tofMonitor[nEvents] = mTof; */
-  /*         nEvents++; */
-  /*       } */
-  /*     } */
-  /*   } */
-  /* } */
 
-
-  ///////////////////////
-  // hack
   for(i = 0; i < dim[0]; i++){
     detID++;
     offset = i*dim[1];
     for(j = 0; j < dim[1]; j++){
       nCount = data[offset+j];
       iTof = round(tof[j]/10.);
-      mTof = tof_monitor[j];
+
       for(l = 0; l < nCount; l++){
         evData->detectorID[nEvents] = detID;
         evData->timeStamp[nEvents] = iTof;
-        evData->tofMonitor[nEvents] = mTof;
+
         nEvents++;
       }
+    }
+  }
+
+  detID++;
+  for(j = 0; j < dim[2]; j++){
+    nCount = tof_monitor[j];
+    iTof = round(tof[j]/10.);
+    
+    for(l = 0; l < nCount; l++){
+      evData->detectorID[nEvents] = detID;
+      evData->timeStamp[nEvents] = iTof;
+      
+      nEvents++;
     }
   }
 
