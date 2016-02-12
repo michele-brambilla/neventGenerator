@@ -8,6 +8,8 @@
 #include <string.h>
 #include <time.h>
 #include <zmq.h>
+#include <assert.h>
+
 #include "nexus2event.h"
 #include "posix_timers.h"
 #include "md5.h"
@@ -37,7 +39,7 @@ int main(int argc, char *argv[])
   time_t statTime;
   int64_t rtimestamp[2];
   unsigned int multiplier = 1;
-  int i;
+  int i, rc;
 
   if(argc < 3) {
     printf("usage:\n\tzmqGenerator nexusfile portNo [multiplier]\n");
@@ -86,16 +88,15 @@ int main(int argc, char *argv[])
     initialize 0MQ
   */
   zmqContext = zmq_ctx_new();
-#if COMM_TYPE == PULLPUSH
-  pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
-#elif COMM_TYPE == PAIR
-  pushSocket = zmq_socket(zmqContext,ZMQ_PAIR);
-#elif COMM_TYPE == PUBSUB
-  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
-#endif
-  snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
-  zmq_bind(pushSocket,sockAddress);
 
+  printf("message sent via %d\n",SEND_TYPE);
+  pushSocket = zmq_socket(zmqContext,SEND_TYPE);
+
+  snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
+  rc = zmq_bind(pushSocket,sockAddress);
+  assert (rc == 0);
+
+  
   /*
     start timer
   */
