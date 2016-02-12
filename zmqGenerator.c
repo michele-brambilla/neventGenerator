@@ -87,11 +87,17 @@ int main(int argc, char *argv[])
   /*
     initialize 0MQ
   */
+  printf("zmq_socket type: %d\n",ZMQ_PUB);
+
   zmqContext = zmq_ctx_new();
+<<<<<<< HEAD
 
   printf("message sent via %d\n",SEND_TYPE);
   pushSocket = zmq_socket(zmqContext,SEND_TYPE);
 
+=======
+  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
+>>>>>>> now works with pub/sub
   snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
   rc = zmq_bind(pushSocket,sockAddress);
   assert (rc == 0);
