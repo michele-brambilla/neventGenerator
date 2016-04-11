@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
   int64_t rtimestamp[2];
   unsigned int multiplier = 1;
   int i, rc;
+  int hwm_value = 2;
 
   if(argc < 3) {
     printf("usage:\n\tzmqGenerator nexusfile portNo [multiplier]\n");
@@ -87,22 +88,15 @@ int main(int argc, char *argv[])
   /*
     initialize 0MQ
   */
-  printf("zmq_socket type: %d\n",ZMQ_PUB);
-
   zmqContext = zmq_ctx_new();
-<<<<<<< HEAD
-
-  printf("message sent via %d\n",SEND_TYPE);
-  pushSocket = zmq_socket(zmqContext,SEND_TYPE);
-
-=======
-  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
->>>>>>> now works with pub/sub
+  //  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
+  pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
   snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
-  rc = zmq_bind(pushSocket,sockAddress);
-  assert (rc == 0);
 
-  
+  zmq_bind(pushSocket,sockAddress);
+
+  i = setsockopt(ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
+
   /*
     start timer
   */

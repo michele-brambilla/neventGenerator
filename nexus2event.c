@@ -196,6 +196,10 @@ static pNEventArray loadFOCUS(char *filename)
     }
   }
 
+  free(data);
+  free(tof_monitor);
+  free(tof);
+
   return evData;
 }
 

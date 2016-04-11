@@ -45,13 +45,14 @@ int main(int argc, char *argv[])
   /*
    * initialize 0mq
    */
-  printf("zmq_socket type: %d\n",ZMQ_PULL);
   zmqContext = zmq_ctx_new();
+  //  pullSocket = zmq_socket(zmqContext,ZMQ_SUB);
   pullSocket = zmq_socket(zmqContext,ZMQ_PULL);
+
   status = zmq_connect(pullSocket,argv[1]);
   assert(status == 0);
   /* status = zmq_setsockopt (pullSocket, ZMQ_SUBSCRIBE, */
-  /*                      "", 0); */
+  /*                          "", 0); */
   
   statTime = time(NULL);
 
@@ -119,6 +120,9 @@ int main(int argc, char *argv[])
       if(dataBuffer != NULL){
 	free(dataBuffer);
       }
+      if(dataTimeStamp != NULL){
+	free(dataTimeStamp);
+      }
       //      dataBufferSize = nEvents*sizeof(int64_t);
       dataBufferSize = nEvents*sizeof(int64_t);
       dataBuffer = malloc(dataBufferSize);
@@ -140,9 +144,6 @@ int main(int argc, char *argv[])
 
     byteCount += zmq_recv(pullSocket,dataTimeStamp,dataTimeStampSize,0);
     byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
-
-    free(dataBuffer);
-    free(dataTimeStamp);
 
     /*
       do the statistics
