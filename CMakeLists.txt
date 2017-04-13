@@ -72,18 +72,13 @@ add_library(zmqGenerator__objects OBJECT
 
 target_compile_definitions(zmqGenerator__objects PRIVATE HAS_REMOTE_API=0)
 
-link_libraries(
-  libzmq 
-  libsodium
-  )
-
 set(tgt "generator")
 set(sources
   zmqGenerator.c
   $<TARGET_OBJECTS:zmqGenerator__objects>
 )
 add_executable(${tgt} ${sources})
-target_link_libraries (${tgt} libNeXus libhdf5)
+target_link_libraries (${tgt} libzmq libsodium libNeXus libhdf5)
 
 set(tgt "receiver")
 set(sources
@@ -91,5 +86,5 @@ set(sources
   $<TARGET_OBJECTS:zmqGenerator__objects>
 )
 add_executable(${tgt} ${sources})
-
+target_link_libraries (${tgt} libzmq libsodium libNeXus libhdf5)
 

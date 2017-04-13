@@ -75,9 +75,6 @@ int main(int argc, char *argv[])
   /*
     create dataHeader
   */
-  /* snprintf(dataHeader,sizeof(dataHeader), */
-  /*          "{\"htype\": \"sinq-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}",  */
-  /*          data->count, data->count); */
 
   snprintf(dataHeader,sizeof(dataHeader),"{\"htype\":\"sinq-1.0\",\"pid\":925,\"st\":1469096950.708,\"ts\":1706054815,\"tr\":10000,\"ds\":[{\"ts\":32,\"bsy\":1,\"cnt\":1,\"rok\":1,\"gat\":1,\"evt\":4,\"id1\":12,\"id0\":12},%lu],\"hws\":{\"bsy\":0,\"cnt\":1,\"rok\":1,\"gat\":1,\"error\":0,\"full\":0,\"zmqerr\":0,\"lost\":[0,0,0,0,0,0,0,0,0,0]}}",data->count);
 
@@ -94,7 +91,7 @@ int main(int argc, char *argv[])
   zmqContext = zmq_ctx_new();
   //  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
   pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
-  snprintf(sockAddress,sizeof(sockAddress),"tcp://129.129.93.164:%s",argv[2]);
+  snprintf(sockAddress,sizeof(sockAddress),"tcp://127.0.0.1:%s",argv[2]);
 
   zmq_bind(pushSocket,sockAddress);
 

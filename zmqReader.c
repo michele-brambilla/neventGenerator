@@ -17,6 +17,11 @@
 #include "neventArray.h"
 /* #include "config.h" */
 
+void timer_func() 
+{
+  //  pulseID++;
+}
+
 int main(int argc, char *argv[])
 {
   unsigned long nCount = 0, pulseCount = 0, oldPulseID = 0, pulseID = 0, nEvents = 0;
@@ -27,15 +32,10 @@ int main(int argc, char *argv[])
   time_t statTime;
   char headerData[1024];
   char *pPtr, *pEnd;
-  //  int64_t *dataBuffer = NULL, rtimestamp[2];
-  ///////////////////////
-  // hack
   int32_t rtimestamp[2];
   int64_t *dataBuffer = NULL, *dataTimeStamp = NULL;
 
   unsigned int dataBufferSize = 0, dataTimeStampSize = 0;
-
-  int i;
 
   if(argc < 2) {
     printf("usage:\n\tzmqReader endpoint\n\twith endpoint being in the format: tcp://host:port\n");
@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
    * initialize 0mq
    */
   zmqContext = zmq_ctx_new();
-  //  pullSocket = zmq_socket(zmqContext,ZMQ_SUB);
   pullSocket = zmq_socket(zmqContext,ZMQ_PULL);
 
   status = zmq_connect(pullSocket,argv[1]);
@@ -68,8 +67,6 @@ int main(int argc, char *argv[])
       headerData[bytesRead] = '\0';
     }
 
-    /* printf("headerData: %s\n",headerData); */
-
     /*
       This bit is for synchronisation: we may connect to the server 
       mid-message...
@@ -78,7 +75,7 @@ int main(int argc, char *argv[])
       printf("Skipping unknown message \n"); 
       continue;
     } else {
-      /* printf("Global header: %s\n",headerData); */
+      printf("Global header: %s\n",headerData);
       byteCount += bytesRead;
     }
 
