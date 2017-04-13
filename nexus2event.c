@@ -239,9 +239,7 @@ static pNEventArray loadRITA2(char *filename)
     printf("failed to allocate memory for NeXus data\n");
     return NULL;
   }
-  printf("len(data) = %d\n",size);
   NXgetdata(handle,data);
-  printf("len(data) = %d\n",size);
   NXclose(&handle);
 
   nEvents = countNeutrons(data,size);

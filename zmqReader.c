@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
 {
   unsigned long nCount = 0, pulseCount = 0, oldPulseID = 0, pulseID = 0, nEvents = 0;
   int64_t byteCount = 0;
-  int bytesRead, status;
+  int bytesRead, status,rcvmore;
+  size_t optlen;
   void *zmqContext = NULL;
   void *pullSocket = NULL;
   time_t statTime;
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
    */
   zmqContext = zmq_ctx_new();
   pullSocket = zmq_socket(zmqContext,ZMQ_PULL);
-
+    
   status = zmq_connect(pullSocket,argv[1]);
   assert(status == 0);
   /* status = zmq_setsockopt (pullSocket, ZMQ_SUBSCRIBE, */
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
 
     root = cJSON_Parse(headerData);
     if( !root ) continue;
-
+      
     item = cJSON_GetObjectItem(root,"pid");
     if( item!= NULL ) {
       pulseID = item->valueint;
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     }
     if(oldPulseID != pulseID && oldPulseID != 0){
       if(pulseID - oldPulseID > 1) {
-	printf("Timer miss at pulseID %lu\n", pulseID);
+        printf("Timer miss at pulseID %lu\n", pulseID);
       }
     }
     oldPulseID = pulseID;
@@ -114,6 +115,8 @@ int main(int argc, char *argv[])
     */
     byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
 
+
+    
     /*
       do the statistics
     */

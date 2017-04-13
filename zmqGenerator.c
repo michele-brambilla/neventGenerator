@@ -42,12 +42,15 @@ int main(int argc, char *argv[]) {
   /*
     load NeXus file into en event list
   */
-  //  data = loadNeXus2Events(argv[1]);
+  data = loadNeXus2Events(argv[1]);
   if(data == NULL){
     printf("Failed to load NeXus data to events\n");
+    return -1;
+  }
+  if(sizeof(data) < 10) {
     data = createNEventArray(1024);
   }
-
+  
   /*
     handle multiplier
   */
@@ -75,7 +78,7 @@ int main(int argc, char *argv[]) {
  
   statTime = time(NULL);
 
-  while(1){
+  while(1) {
 
     /*
       create dataHeader
@@ -84,10 +87,14 @@ int main(int argc, char *argv[]) {
     /*
       send the stuff away 
     */
-    
-    byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
-    byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),0);
-      
+
+    if(data->count) {
+      byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
+      byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),0);
+    }
+    else {
+      byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),0);
+    }
     /*
       handle statistics
     */
