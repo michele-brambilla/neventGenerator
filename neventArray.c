@@ -7,57 +7,45 @@
 #include <string.h>
 #include "neventArray.h"
 
-pNEventArray createNEventArray(unsigned long count)
-{
+pNEventArray createNEventArray(unsigned long count) {
   pNEventArray result = NULL;
-
+  
   result = malloc(sizeof(neventArray));
-  if(result == NULL){
-    return result;
-  }
-  memset(result,0,sizeof(neventArray));
+  if(result == NULL){ return result; }
+
   result->count = count;
-  result->detectorID = malloc(count*sizeof(int64_t));
-  result->timeStamp = malloc(count*sizeof(int32_t));
-  if(result->detectorID == NULL || result->timeStamp == NULL){
+  memset(result,0,sizeof(neventArray));
+  result->event = malloc(count*sizeof(int64_t));
+
+  if(result->event == NULL) {
     killNEventArray(&result);
     return NULL;
   }
-
   return result;
 }
 /*--------------------------------------------*/
-void killNEventArray(pNEventArray *pself)
-{
+void killNEventArray(pNEventArray *pself) {
   pNEventArray self = *pself;
   if(self != NULL){
-    if(self->detectorID != NULL){
-      free(self->detectorID);
-    }
-    if(self->timeStamp != NULL){
-      free(self->timeStamp);
+    if(self->event != NULL){
+      free(self->event);
     }
     free(*pself);
   }
 }
 
 /*-----------------------------------------------------------*/
-/////////////////
-// hack
+
 pNEventArray multiplyNEventArray(pNEventArray source, unsigned int factor)
 {
   pNEventArray result;
   int i;
 
   result = createNEventArray(source->count*factor);
-  if(result == NULL){
-    return NULL;
-  }
+  if(result == NULL){ return NULL; }
   for(i = 0; i < factor; i++){
-    memcpy(result->detectorID + factor*source->count,
-	   source->detectorID, source->count*sizeof(int64_t));
-    memcpy(result->timeStamp + factor*source->count,
-	   source->timeStamp, source->count*sizeof(int32_t));
+    memcpy(result->event + i*source->count,
+  	   source->event, source->count*sizeof(int64_t));
   }
-  return result;
+  return source;
 }

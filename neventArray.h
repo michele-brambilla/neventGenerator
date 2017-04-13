@@ -10,8 +10,7 @@
 
 typedef struct {
   unsigned long count;
-  int64_t *detectorID;
-  int32_t *timeStamp;
+  int64_t *event;
 } neventArray, *pNEventArray;
 
 

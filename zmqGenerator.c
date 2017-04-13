@@ -26,7 +26,7 @@ void timer_func()
 int main(int argc, char *argv[])
 {
   static unsigned int oldPulseID = 0;
-  char dataHeader[1024], globalHeader[1024];
+  char dataHeader[1024];
   pNEventArray data = NULL, tmp = NULL;
   MD5_CTX md5Context;
   unsigned char md5Hash[16];
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   time_t statTime;
   int64_t rtimestamp[2];
   unsigned int multiplier = 1;
-  int i, rc;
+  int rc;
   int hwm_value = 2;
 
   if(argc < 3) {
@@ -89,13 +89,10 @@ int main(int argc, char *argv[])
     initialize 0MQ
   */
   zmqContext = zmq_ctx_new();
-  //  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
   pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
   snprintf(sockAddress,sizeof(sockAddress),"tcp://127.0.0.1:%s",argv[2]);
-
   zmq_bind(pushSocket,sockAddress);
-
-  i = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
+  rc = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
 
   /*
     start timer
@@ -111,37 +108,12 @@ int main(int argc, char *argv[])
 	printf("Timer miss at pulseID %lu\n", pulseID);
       }
       oldPulseID = pulseID;
-      /* printf("Timer triggered, pulseID  = %ld\n", pulseID); */
-
-      /*
-	create global header
-      */
-      clock_gettime(CLOCK_MONOTONIC,&tPulse);
-      snprintf(globalHeader,sizeof(globalHeader),
-	       "{\"global_timespamp\": {\"epoch\": %ld, \"ns\": %ld}, \"hash\": \"%p\",\"htype\": \"bsr_m-1.0\",\"pulse_id\": %ld}",
-	       (long)tPulse.tv_sec,(long)tPulse.tv_nsec, md5Hash,pulseID
-	       );
-
-      /*
-	create timestamp
-      */
-      rtimestamp[0] = tPulse.tv_sec;
-      rtimestamp[1] = tPulse.tv_nsec;
 
       /*
 	send the stuff away 
       */
-      byteCount += zmq_send(pushSocket,globalHeader,strlen(globalHeader),ZMQ_SNDMORE);
-
       byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
-
-      byteCount += zmq_send(pushSocket,data->detectorID,data->count*sizeof(int64_t),ZMQ_SNDMORE);
-
-      byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), ZMQ_SNDMORE);
-
-      byteCount += zmq_send(pushSocket,data->timeStamp,data->count*sizeof(int32_t),ZMQ_SNDMORE);
-
-      byteCount += zmq_send(pushSocket,rtimestamp,2*sizeof(int64_t), 0);
+      byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),ZMQ_SNDMORE);
       
       /*
 	handle statistics
