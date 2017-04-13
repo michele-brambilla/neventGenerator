@@ -11,8 +11,6 @@
 #include <zmq.h>
 
 #include "nexus2event.h"
-/* #include "posix_timers.h" */
-#include "md5.h"
 
 /* #include "config.h" */
 
@@ -23,21 +21,15 @@ void timer_func()
   pulseID++;
 }
 
-int main(int argc, char *argv[])
-{
-  static unsigned int oldPulseID = 0;
-  char dataHeader[1024];
+int main(int argc, char *argv[]) {
+  char dataHeader[1024*1024];
   pNEventArray data = NULL, tmp = NULL;
-  MD5_CTX md5Context;
-  unsigned char md5Hash[16];
-  struct timespec tPulse;
   void *zmqContext = NULL;
   void *pushSocket = NULL;
   char sockAddress[255];
   unsigned long nCount = 0,  pulseCount = 0;
   int64_t byteCount = 0;
   time_t statTime;
-  int64_t rtimestamp[2];
   unsigned int multiplier = 1;
   int rc;
   int hwm_value = 2;
@@ -50,9 +42,10 @@ int main(int argc, char *argv[])
   /*
     load NeXus file into en event list
   */
-  data = loadNeXus2Events(argv[1]);
+  //  data = loadNeXus2Events(argv[1]);
   if(data == NULL){
     printf("Failed to load NeXus data to events\n");
+    data = createNEventArray(1024);
   }
 
   /*
@@ -69,62 +62,47 @@ int main(int argc, char *argv[])
       data = tmp;
     }
   }
-
   printf("Sending %ld n-events per message\n", data->count);
-
-  /*
-    create dataHeader
-  */
-  snprintf(dataHeader,sizeof(dataHeader),"{\"htype\":\"sinq-1.0\",\"pid\":925,\"st\":1469096950.708,\"ts\":1706054815,\"tr\":10000,\"ds\":[{\"ts\":32,\"bsy\":1,\"cnt\":1,\"rok\":1,\"gat\":1,\"evt\":4,\"id1\":12,\"id0\":12},%lu],\"hws\":{\"bsy\":0,\"cnt\":1,\"rok\":1,\"gat\":1,\"error\":0,\"full\":0,\"zmqerr\":0,\"lost\":[0,0,0,0,0,0,0,0,0,0]}}",data->count);
 
   /*
     initialize 0MQ
   */
   zmqContext = zmq_ctx_new();
   pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
-  snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
-  zmq_bind(pushSocket,sockAddress);
-  /* rc = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value)); */
-
-  /*
-    start timer
-  */
-  /* init_timer(); */
-  /* set_periodic_timer(71420); /\* 71,42 milliseconds == 14HZ *\/ */
-  
+  snprintf(sockAddress,sizeof(sockAddress),"tcp://127.0.0.1:2911");
+  rc = zmq_bind(pushSocket,sockAddress);
+  rc = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
+ 
   statTime = time(NULL);
 
   while(1){
-    if(oldPulseID != pulseID){
-      if(pulseID - oldPulseID > 1) {
-	printf("Timer miss at pulseID %lu\n", pulseID);
-      }
-      oldPulseID = pulseID;
 
-      /*
-	send the stuff away 
-      */
-      byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),
-			    /* ZMQ_SNDMORE */
-			    0
-			    );
-      /* byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),0); */
+    /*
+      create dataHeader
+    */
+    snprintf(dataHeader,sizeof(dataHeader),"{\"htype\":\"sinq-1.0\",\"pid\":%lu,\"st\":1469096950.708,\"ts\":1706054815,\"tr\":10000,\"ds\":[{\"ts\":32,\"bsy\":1,\"cnt\":1,\"rok\":1,\"gat\":1,\"evt\":4,\"id1\":12,\"id0\":12},%lu],\"hws\":{\"bsy\":0,\"cnt\":1,\"rok\":1,\"gat\":1,\"error\":0,\"full\":0,\"zmqerr\":0,\"lost\":[0,0,0,0,0,0,0,0,0,0]}}",pulseID,data->count);
+    /*
+      send the stuff away 
+    */
+    
+    byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
+    byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),0);
       
-      /*
-	handle statistics
-      */
-      nCount += data->count;
-      pulseCount++;
-      if(time(NULL) >= statTime + 10){
-	printf("byteCount = %ld, nCount = %ld, pulseCount = %ld\n", byteCount, nCount, pulseCount); 
-	printf("Sent %f MB/sec , %f n* 10^6/sec, %ld pulses\n", byteCount/(1024.*1024.*10.), nCount/10000000., pulseCount);
-	pulseCount = 0;
-	byteCount = 0;
-	nCount = 0;
-	statTime = time(NULL);
-      }
+    /*
+      handle statistics
+    */
+    nCount += data->count;
+    pulseCount++;
+    if(time(NULL) >= statTime + 10){
+      printf("byteCount = %lld, nCount = %ld, pulseCount = %ld\n", byteCount, nCount, pulseCount); 
+      printf("Sent %f MB/sec , %f n* 10^6/sec, %ld pulses\n", byteCount/(1024.*1024.*10.), nCount/10000000., pulseCount);
+      pulseCount = 0;
+      byteCount = 0;
+      nCount = 0;
+      statTime = time(NULL);
     }
   }
+
 
   killNEventArray(&data);
   zmq_close(pushSocket);

@@ -46,7 +46,7 @@ set_property(TARGET libNeXus PROPERTY IMPORTED_LOCATION ${path_lib_nexus})
 
 #hdf5
 find_path(path_include_hdf5 NAMES hdf5.h)
-find_library(path_lib_hdf5 NAMES hdf5)
+find_library(path_lib_hdf5 NAMES hdf5-shared)
 add_library(libhdf5 SHARED IMPORTED)
 set_property(TARGET libhdf5 PROPERTY IMPORTED_LOCATION ${path_lib_hdf5})
 
@@ -66,8 +66,7 @@ include_directories(
 add_library(zmqGenerator__objects OBJECT
   neventArray.c
   nexus2event.c 
-  md5.c
-#  posix-timers.c
+  cJSON.c
 )
 
 target_compile_definitions(zmqGenerator__objects PRIVATE HAS_REMOTE_API=0)

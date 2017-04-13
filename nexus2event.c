@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <napi.h>
+#include <nexus/napi.h>
 #include <assert.h>
 #include <math.h>
 #include "neventArray.h"
@@ -226,16 +226,22 @@ static pNEventArray loadRITA2(char *filename)
     printf("NeXus file %s in wrong format\n", filename);
     return NULL;
   }
+  
   NXgetinfo(handle,&rank,dim,&type);
   for(i = 1, size = dim[0]; i < rank; i++){
     size *= dim[i];
   }
+  /* for(i = 0; i < rank; i++){ */
+  /*   printf("dim[%d] = %d\n",i,dim[i]); */
+  /* } */
   data = malloc(size*sizeof(int32_t));
   if(data == NULL ){
     printf("failed to allocate memory for NeXus data\n");
     return NULL;
   }
+  printf("len(data) = %d\n",size);
   NXgetdata(handle,data);
+  printf("len(data) = %d\n",size);
   NXclose(&handle);
 
   nEvents = countNeutrons(data,size);

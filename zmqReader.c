@@ -14,6 +14,7 @@
 
 #include <zmq.h>
 
+#include "cJSON.h"
 #include "neventArray.h"
 /* #include "config.h" */
 
@@ -31,12 +32,11 @@ int main(int argc, char *argv[])
   void *pullSocket = NULL;
   time_t statTime;
   char headerData[1024*1024];
-  char *pPtr, *pEnd;
-  int32_t rtimestamp[2];
-  int64_t *dataBuffer = NULL, *dataTimeStamp = NULL;
-
-  unsigned int dataBufferSize = 0, dataTimeStampSize = 0;
-
+  int64_t *dataBuffer = NULL;
+  unsigned int dataBufferSize = 0;
+  cJSON* root;
+  cJSON* item;
+  
   if(argc < 2) {
     printf("usage:\n\tzmqReader endpoint\n\twith endpoint being in the format: tcp://host:port\n");
     return 1;
@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
   /*                          "", 0); */
   
   statTime = time(NULL);
-
   
   while(1) {
 
@@ -64,10 +63,33 @@ int main(int argc, char *argv[])
     } else {
       headerData[bytesRead] = '\0';
     }
-    printf("header: %s\n",headerData);
 
-    nEvents = atoi(pPtr);
-    /* printf("nEvents = %d\n", nEvents); */
+    root = cJSON_Parse(headerData);
+    if( !root ) continue;
+
+    item = cJSON_GetObjectItem(root,"pid");
+    if( item!= NULL ) {
+      pulseID = item->valueint;
+    }
+    else {
+      pulseID = -1;
+    }
+    if(oldPulseID != pulseID && oldPulseID != 0){
+      if(pulseID - oldPulseID > 1) {
+	printf("Timer miss at pulseID %lu\n", pulseID);
+      }
+    }
+    oldPulseID = pulseID;
+      
+    item = cJSON_GetObjectItem(root,"ds");
+    if( item == NULL ) continue;
+    item = cJSON_GetArrayItem(item,1);
+    if( item == NULL ) continue;
+    nEvents = item->valueint;
+
+    item = NULL;
+    cJSON_Delete(root);
+
     nCount += nEvents;
 
     /*
@@ -75,21 +97,15 @@ int main(int argc, char *argv[])
     */
     if(nEvents *sizeof(int64_t) != dataBufferSize){
       if(dataBuffer != NULL){
-	free(dataBuffer);
+        free(dataBuffer);
       }
-      if(dataTimeStamp != NULL){
-	free(dataTimeStamp);
-      }
-      //      dataBufferSize = nEvents*sizeof(int64_t);
+
       dataBufferSize = nEvents*sizeof(int64_t);
       dataBuffer = malloc(dataBufferSize);
 
-      dataTimeStampSize = nEvents*sizeof(int32_t);
-      dataTimeStamp = malloc(dataTimeStampSize);
-
-      if(dataBuffer == NULL ||  dataTimeStamp == NULL){
-	printf("Out of memory allocating data buffers\n");
-	return 1;
+      if(dataBuffer == NULL){
+        printf("Out of memory allocating data buffers\n");
+        return 1;
       }
     }
 
@@ -102,9 +118,8 @@ int main(int argc, char *argv[])
       do the statistics
     */
     pulseCount++;
-    if(time(NULL) >= statTime + 10){
-      /* printf("byteCount = %ld, nCount = %ld, pulseCount = %ld\n", byteCount, nCount, pulseCount);  */
-      printf("Received %f MB/sec , %f n* 10^6/sec, %ld pulses\n", byteCount/(1024.*1024.*10.), nCount/10000000., pulseCount);
+    if(time(NULL) >= statTime + 5){
+      printf("Received %f MB/sec , %f n* 10^6/sec, %ld pulses\n", byteCount/(1024.*1024.*5.), nCount*1.e-6*0.2, pulseCount);
       pulseCount = 0;
       byteCount = 0;
       nCount = 0;
