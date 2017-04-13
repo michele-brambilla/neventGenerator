@@ -66,18 +66,7 @@ int main(int argc, char *argv[])
     } else {
       headerData[bytesRead] = '\0';
     }
-
-    /*
-      This bit is for synchronisation: we may connect to the server 
-      mid-message...
-    */
-    if(strstr(headerData,"bsr_m-1.0") == NULL){
-      printf("Skipping unknown message \n"); 
-      continue;
-    } else {
-      printf("Global header: %s\n",headerData);
-      byteCount += bytesRead;
-    }
+    printf("header: %s",headerData);
 
     pPtr = strstr(headerData, "pulse_id\":");
     if(pPtr != NULL){
@@ -137,10 +126,6 @@ int main(int argc, char *argv[])
       read the two data elements
     */
     byteCount += zmq_recv(pullSocket,dataBuffer,dataBufferSize,0);
-    byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
-
-    byteCount += zmq_recv(pullSocket,dataTimeStamp,dataTimeStampSize,0);
-    byteCount += zmq_recv(pullSocket,rtimestamp,sizeof(rtimestamp),0);
 
     /*
       do the statistics

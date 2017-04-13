@@ -7,14 +7,15 @@
 #include <string.h>
 #include "neventArray.h"
 
+
 pNEventArray createNEventArray(unsigned long count) {
   pNEventArray result = NULL;
   
   result = malloc(sizeof(neventArray));
   if(result == NULL){ return result; }
+  memset(result,0,sizeof(neventArray));
 
   result->count = count;
-  memset(result,0,sizeof(neventArray));
   result->event = malloc(count*sizeof(int64_t));
 
   if(result->event == NULL) {
