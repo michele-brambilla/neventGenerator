@@ -6,15 +6,15 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <time.h>
 #include <zmq.h>
-#include <assert.h>
 
 #include "nexus2event.h"
 #include "posix_timers.h"
 #include "md5.h"
 
-#include "config.h"
+/* #include "config.h" */
 
 static unsigned long pulseID = 0L; 
 
@@ -75,9 +75,12 @@ int main(int argc, char *argv[])
   /*
     create dataHeader
   */
-  snprintf(dataHeader,sizeof(dataHeader),
-           "{\"htype\": \"bsr_d-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}", 
-           data->count, data->count);
+  /* snprintf(dataHeader,sizeof(dataHeader), */
+  /*          "{\"htype\": \"sinq-1.0\", \"channels\" :[{\"name\":\"detectorID\", \"type\":\"long\",\"shape\":[%ld] }, [{\"name\":\"timestamps\", \"type\":\"int\",\"shape\":[%ld] } ]}",  */
+  /*          data->count, data->count); */
+
+  snprintf(dataHeader,sizeof(dataHeader),"{\"htype\":\"sinq-1.0\",\"pid\":925,\"st\":1469096950.708,\"ts\":1706054815,\"tr\":10000,\"ds\":[{\"ts\":32,\"bsy\":1,\"cnt\":1,\"rok\":1,\"gat\":1,\"evt\":4,\"id1\":12,\"id0\":12},%lu],\"hws\":{\"bsy\":0,\"cnt\":1,\"rok\":1,\"gat\":1,\"error\":0,\"full\":0,\"zmqerr\":0,\"lost\":[0,0,0,0,0,0,0,0,0,0]}}",data->count);
+
   
   MD5Init(&md5Context);
   MD5Update(&md5Context,dataHeader,strlen(dataHeader));
@@ -91,11 +94,11 @@ int main(int argc, char *argv[])
   zmqContext = zmq_ctx_new();
   //  pushSocket = zmq_socket(zmqContext,ZMQ_PUB);
   pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
-  snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
+  snprintf(sockAddress,sizeof(sockAddress),"tcp://129.129.93.164:%s",argv[2]);
 
   zmq_bind(pushSocket,sockAddress);
 
-  i = setsockopt(ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
+  i = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
 
   /*
     start timer
@@ -108,7 +111,7 @@ int main(int argc, char *argv[])
   while(1){
     if(oldPulseID != pulseID){
       if(pulseID - oldPulseID > 1) {
-	printf("Timer miss at pulseID %d\n", pulseID);
+	printf("Timer miss at pulseID %lu\n", pulseID);
       }
       oldPulseID = pulseID;
       /* printf("Timer triggered, pulseID  = %ld\n", pulseID); */
@@ -118,10 +121,9 @@ int main(int argc, char *argv[])
       */
       clock_gettime(CLOCK_MONOTONIC,&tPulse);
       snprintf(globalHeader,sizeof(globalHeader),
-	       "{\"global_timespamp\": {\"epoch\": %d, \"ns\": %d}, \"hash\": \"%x\",\"htype\": \"bsr_m-1.0\",\"pulse_id\": %ld}",
-	       tPulse.tv_sec,tPulse.tv_nsec, md5Hash,pulseID
+	       "{\"global_timespamp\": {\"epoch\": %ld, \"ns\": %ld}, \"hash\": \"%p\",\"htype\": \"bsr_m-1.0\",\"pulse_id\": %ld}",
+	       (long)tPulse.tv_sec,(long)tPulse.tv_nsec, md5Hash,pulseID
 	       );
-      /* printf(globalHeader); */
 
       /*
 	create timestamp

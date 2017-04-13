@@ -9,14 +9,14 @@ INC = neventArray.h nexus2event.h posix_timers.h md5.h config.h
 
 all: zmqGenerator zmqReader
 
-.c.o:	$(INC)
-	$(CC) -c -g -I$(NXINSTALL)/include $*.c
+.c.o:
+	$(CC) -c -ggdb -I$(NXINSTALL)/include $*.c
 
-zmqGenerator: $(OBJ) $(INC)
-	$(CC) -g -o zmqGenerator -L$(NXINSTALL)/lib $(OBJ) -lNeXus -lhdf5 -lsz -lrt -lzmq -lsodium
+zmqGenerator: $(OBJ)
+	$(CC) -ggdb -o zmqGenerator -L$(NXINSTALL)/lib $(OBJ) -lNeXus -lhdf5 -lsz -lrt -lzmq -lsodium -lmxml
 
-zmqReader: $(ROBJ) $(INC)
-	$(CC) -g -o zmqReader $(ROBJ) -L$(NXINSTALL)/lib -lzmq -lsodium
+zmqReader: $(ROBJ)
+	$(CC) -ggdb -o zmqReader $(ROBJ) -L$(NXINSTALL)/lib -lzmq -lsodium
 
 clean:
 	- rm *.o
