@@ -67,7 +67,7 @@ add_library(zmqGenerator__objects OBJECT
   neventArray.c
   nexus2event.c 
   md5.c
-  posix-timers.c
+#  posix-timers.c
 )
 
 target_compile_definitions(zmqGenerator__objects PRIVATE HAS_REMOTE_API=0)

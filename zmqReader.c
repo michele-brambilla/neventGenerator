@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   void *zmqContext = NULL;
   void *pullSocket = NULL;
   time_t statTime;
-  char headerData[1024];
+  char headerData[1024*1024];
   char *pPtr, *pEnd;
   int32_t rtimestamp[2];
   int64_t *dataBuffer = NULL, *dataTimeStamp = NULL;
@@ -57,44 +57,15 @@ int main(int argc, char *argv[])
 
   
   while(1) {
-    /*
-      receive global header and pull out pulseID
-    */ 
+
     bytesRead = zmq_recv(pullSocket, headerData, sizeof(headerData),0);
     if(bytesRead >= sizeof(headerData)) {
       headerData[sizeof(headerData)-1] = '\0';
     } else {
       headerData[bytesRead] = '\0';
     }
-    printf("header: %s",headerData);
+    printf("header: %s\n",headerData);
 
-    pPtr = strstr(headerData, "pulse_id\":");
-    if(pPtr != NULL){
-      pPtr += strlen( "pulse_id\":");
-    }
-    pEnd = strchr(pPtr,'}');
-    *pEnd = '\0';
-    pulseID = atoi(pPtr);
-    /* printf("pulseID = %ld\n", pulseID); */
-    if(pulseID - oldPulseID > 1) {
-      printf("Missed pulse at pulseID %ld\n", pulseID);
-    }
-    oldPulseID = pulseID;
-
-    /*
-      receive data header and put out data length
-    */
-    bytesRead = zmq_recv(pullSocket, headerData, sizeof(headerData),0);
-    headerData[bytesRead] = '\0';
-    byteCount += bytesRead;
-    /* printf("Data header: %s\n",headerData); */
-
-    pPtr = strstr(headerData, "shape\":[");
-    if(pPtr != NULL){
-      pPtr += strlen("shape\":[");
-    }
-    pEnd = strchr(pPtr,']');
-    *pEnd = '\0';
     nEvents = atoi(pPtr);
     /* printf("nEvents = %d\n", nEvents); */
     nCount += nEvents;

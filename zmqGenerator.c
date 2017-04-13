@@ -11,7 +11,7 @@
 #include <zmq.h>
 
 #include "nexus2event.h"
-#include "posix_timers.h"
+/* #include "posix_timers.h" */
 #include "md5.h"
 
 /* #include "config.h" */
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   int hwm_value = 2;
 
   if(argc < 3) {
-    printf("usage:\n\tzmqGenerator nexusfile portNo [multiplier]\n");
+    printf("usage:\n\tzmqGenerator nexusfile port [multiplier]\n");
     return 1;
   }
 
@@ -82,15 +82,15 @@ int main(int argc, char *argv[])
   */
   zmqContext = zmq_ctx_new();
   pushSocket = zmq_socket(zmqContext,ZMQ_PUSH);
-  snprintf(sockAddress,sizeof(sockAddress),"tcp://127.0.0.1:%s",argv[2]);
+  snprintf(sockAddress,sizeof(sockAddress),"tcp://*:%s",argv[2]);
   zmq_bind(pushSocket,sockAddress);
   /* rc = zmq_setsockopt(pushSocket,ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value)); */
 
   /*
     start timer
   */
-  init_timer();
-  set_periodic_timer(71420); /* 71,42 milliseconds == 14HZ */
+  /* init_timer(); */
+  /* set_periodic_timer(71420); /\* 71,42 milliseconds == 14HZ *\/ */
   
   statTime = time(NULL);
 
@@ -104,8 +104,11 @@ int main(int argc, char *argv[])
       /*
 	send the stuff away 
       */
-      byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),ZMQ_SNDMORE);
-      byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),ZMQ_SNDMORE);
+      byteCount += zmq_send(pushSocket,dataHeader,strlen(dataHeader),
+			    /* ZMQ_SNDMORE */
+			    0
+			    );
+      /* byteCount += zmq_send(pushSocket,data->event,data->count*sizeof(int64_t),0); */
       
       /*
 	handle statistics
