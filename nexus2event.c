@@ -8,6 +8,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
@@ -38,7 +39,7 @@ static pNEventArray loadRITA2(const char *filename) {
   uint32_t i, x, y, temp, timestamp, cts;
 
   event_t event;
-  pNEventArray *events;
+  pNEventArray events;
   uint64_t nEvents, counter;
 
   int32_t *counts;
@@ -57,10 +58,7 @@ static pNEventArray loadRITA2(const char *filename) {
   H5LTread_dataset_int(file_id, "/entry1/RITA-2/detector/counts", counts);
 
   /* allocate event array */
-  nEvents = 0;
-  for (i = 0; i < size; ++i) {
-    nEvents += counts[i];
-  }
+  nEvents = countNeutrons(counts, size);
   events = createNEventArray(nEvents);
 
   /* fill event array */
@@ -77,11 +75,11 @@ static pNEventArray loadRITA2(const char *filename) {
     event.s[0] = 32 * x * dim[2] + 32 * y;
     event.s[0] += EV_TYPE_POS_1D + RITA2_COUNTER_MASK;
     for (cts = 0; cts < counts[i]; ++cts) {
-      events[counter] = event.l;
+      events->event[counter] = event.l;
       counter++;
     }
   }
-  free(dim);
+  printf("done\n");
   free(counts);
   return events;
 }
