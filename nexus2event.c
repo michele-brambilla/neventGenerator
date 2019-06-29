@@ -86,87 +86,87 @@ static pNEventArray loadRITA2(const char *filename) {
   return events;
 }
 
-// static pNEventArray loadAMOR(char *filename) {
-//   NXhandle handle;
-//   int32_t dim[3];
-//   int status, i, j, k, l, nCount, rank, type;
-//   unsigned int size, offset;
-//   int32_t *data = NULL;
-//   float *tof = NULL;
-//   int32_t iTof;
-//   unsigned long nEvents;
-//   pNEventArray evData = NULL;
-//   unsigned int detID = -1;
-//   int file_id;
-//
-//   file_id = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-//   // status = NXopen(filename, NXACC_READ, &handle);
-//   if (!file_id) {
-//     printf("Failed to open NeXus file %s\n", filename);
-//     return NULL;
-//   }
-//
-//   /* get the dimensions of the dataset */
-//   H5LTget_dataset_info(file_id, "/entry1/AMOR/area_detector/data", dim, NULL,
-//                        NULL);
-//
-//   // status = NXopenpath(handle, "/entry1/AMOR/area_detector/data");
-//   // if (status != NX_OK) {
-//   //   printf("NeXus file %s in wrong format\n", filename);
-//   //   return NULL;
-//   // }
-//   // NXgetinfo(handle, &rank, dim, &type);
-//   printf("%d\t", dim[0]);
-//   for (i = 1, size = dim[0]; i < 3; i++) {
-//     printf("%d\t", dim[i]);
-//     size *= dim[i];
-//   }
-//   printf("\n");
-//   data = malloc(size * sizeof(int32_t));
-//   tof = malloc(dim[2] * sizeof(float));
-//   if (data == NULL || tof == NULL) {
-//     printf("failed to allocate memory for NeXus data\n");
-//     return NULL;
-//   }
-//   NXgetdata(handle, data);
-//
-//   status = NXopenpath(handle, "/entry1/AMOR/area_detector/time_binning");
-//   if (status != NX_OK) {
-//     printf("NeXus file %s in wrong format\n", filename);
-//     return NULL;
-//   }
-//   NXgetdata(handle, tof);
-//
-//   NXclose(&handle);
-//
-//   nEvents = countNeutrons(data, size);
-//   evData = createNEventArray(nEvents);
-//   if (evData == NULL) {
-//     return NULL;
-//   }
-//   /* nEvents = 0; */
-//   /* for(i = 0; i < dim[0]; i++){ */
-//   /*   for(j = 0; j < dim[1]; j++){ */
-//   /*     detID++; */
-//   /*     offset = i*dim[1]*dim[2] + j*dim[2]; */
-//   /*     for(k = 0; k < dim[2]; k++){ */
-//   /* 	nCount = data[offset+k]; */
-//   /* 	iTof = round(tof[k]/10.); */
-//   /* 	for(l = 0; l < nCount; l++){ */
-//   /* 	  evData->detectorID[nEvents] = detID; */
-//   /* 	  evData->timeStamp[nEvents] = iTof; */
-//   /* 	  nEvents++; */
-//   /* 	} */
-//   /*     } */
-//   /*   } */
-//   /* } */
-//
-//   free(data);
-//   free(tof);
-//
-//   return evData;
-// }
-//
+static pNEventArray loadAMOR(char *filename) {
+  //   NXhandle handle;
+  //   int32_t dim[3];
+  //   int status, i, j, k, l, nCount, rank, type;
+  //   unsigned int size, offset;
+  //   int32_t *data = NULL;
+  //   float *tof = NULL;
+  //   int32_t iTof;
+  //   unsigned long nEvents;
+  pNEventArray evData = NULL;
+  //   unsigned int detID = -1;
+  //   int file_id;
+  //
+  //   file_id = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+  //   // status = NXopen(filename, NXACC_READ, &handle);
+  //   if (!file_id) {
+  //     printf("Failed to open NeXus file %s\n", filename);
+  //     return NULL;
+  //   }
+  //
+  //   /* get the dimensions of the dataset */
+  //   H5LTget_dataset_info(file_id, "/entry1/AMOR/area_detector/data", dim,
+  //   NULL,
+  //                        NULL);
+  //
+  //   // status = NXopenpath(handle, "/entry1/AMOR/area_detector/data");
+  //   // if (status != NX_OK) {
+  //   //   printf("NeXus file %s in wrong format\n", filename);
+  //   //   return NULL;
+  //   // }
+  //   // NXgetinfo(handle, &rank, dim, &type);
+  //   printf("%d\t", dim[0]);
+  //   for (i = 1, size = dim[0]; i < 3; i++) {
+  //     printf("%d\t", dim[i]);
+  //     size *= dim[i];
+  //   }
+  //   printf("\n");
+  //   data = malloc(size * sizeof(int32_t));
+  //   tof = malloc(dim[2] * sizeof(float));
+  //   if (data == NULL || tof == NULL) {
+  //     printf("failed to allocate memory for NeXus data\n");
+  //     return NULL;
+  //   }
+  //   NXgetdata(handle, data);
+  //
+  //   status = NXopenpath(handle, "/entry1/AMOR/area_detector/time_binning");
+  //   if (status != NX_OK) {
+  //     printf("NeXus file %s in wrong format\n", filename);
+  //     return NULL;
+  //   }
+  //   NXgetdata(handle, tof);
+  //
+  //   NXclose(&handle);
+  //
+  //   nEvents = countNeutrons(data, size);
+  //   evData = createNEventArray(nEvents);
+  //   if (evData == NULL) {
+  //     return NULL;
+  //   }
+  //   /* nEvents = 0; */
+  //   /* for(i = 0; i < dim[0]; i++){ */
+  //   /*   for(j = 0; j < dim[1]; j++){ */
+  //   /*     detID++; */
+  //   /*     offset = i*dim[1]*dim[2] + j*dim[2]; */
+  //   /*     for(k = 0; k < dim[2]; k++){ */
+  //   /* 	nCount = data[offset+k]; */
+  //   /* 	iTof = round(tof[k]/10.); */
+  //   /* 	for(l = 0; l < nCount; l++){ */
+  //   /* 	  evData->detectorID[nEvents] = detID; */
+  //   /* 	  evData->timeStamp[nEvents] = iTof; */
+  //   /* 	  nEvents++; */
+  //   /* 	} */
+  //   /*     } */
+  //   /*   } */
+  //   /* } */
+  //
+  //   free(data);
+  //   free(tof);
+  //
+  return evData;
+}
 
 static pNEventArray loadFOCUS(char *filename) {
   //   NXhandle handle;
@@ -225,7 +225,8 @@ static pNEventArray loadFOCUS(char *filename) {
   //
   //   NXclose(&handle);
   //
-  //   nEvents = countNeutrons(data, size) + countNeutrons(tof_monitor, dim[2]);
+  //   nEvents = countNeutrons(data, size) + countNeutrons(tof_monitor,
+  //   dim[2]);
   //
   //   evData = createNEventArray(nEvents);
   //   if (evData == NULL) {

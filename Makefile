@@ -1,7 +1,6 @@
 # Makefile for zmqGenerator
 
-OBJ=neventArray.o zmqGenerator.o nexus2event.o posix-timers.o md5.o
-NXINSTALL=/afs/psi.ch/project/sinq/sl6-64
+OBJ=neventArray.o zmqGenerator.o nexus2event.o
 
 ROBJ=zmqReader.o
 
@@ -13,10 +12,10 @@ all: zmqGenerator zmqReader
 	$(CC) -c -ggdb -I$(NXINSTALL)/include $*.c
 
 zmqGenerator: $(OBJ)
-	$(CC) -ggdb -o zmqGenerator -L$(NXINSTALL)/lib $(OBJ) -lNeXus -lhdf5 -lsz -lrt -lzmq -lsodium -lmxml
+	$(CC) -ggdb -o zmqGenerator $(OBJ) -lNeXus -lhdf5 -lhdf5_hl -lzmq -lsodium
 
 zmqReader: $(ROBJ)
-	$(CC) -ggdb -o zmqReader $(ROBJ) -L$(NXINSTALL)/lib -lzmq -lsodium
+	$(CC) -ggdb -o zmqReader $(ROBJ) -lzmq -lsodium
 
 clean:
 	- rm *.o
