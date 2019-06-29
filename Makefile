@@ -1,11 +1,12 @@
 # Makefile for zmqGenerator
 
-OBJ=neventArray.o zmqGenerator.o nexus2event.o posix-timers.o md5.o
-NXINSTALL=/afs/psi.ch/project/sinq/sl6-64
-
+OBJ=neventArray.o zmqGenerator.o nexus2event.o 
+NXINSTALL=
+HDF5_LIBRARY_PATH = /opt/stow/hdf5-1.8/lib
 ROBJ=zmqReader.o
 
-INC = neventArray.h nexus2event.h posix_timers.h md5.h config.h
+INC = neventArray.h nexus2event.h posix_timers.h md5.h config.h utils.h
+CC = gcc-mp-6
 
 all: zmqGenerator zmqReader
 
@@ -13,7 +14,7 @@ all: zmqGenerator zmqReader
 	$(CC) -c -ggdb -I$(NXINSTALL)/include $*.c
 
 zmqGenerator: $(OBJ)
-	$(CC) -ggdb -o zmqGenerator -L$(NXINSTALL)/lib $(OBJ) -lNeXus -lhdf5 -lsz -lrt -lzmq -lsodium -lmxml
+	$(CC) -ggdb -o zmqGenerator -L$(NXINSTALL)/lib $(OBJ) -lNeXus -lzmq -lsodium -lmxml -Wl,-rpath $(HDF5_LIBRARY_PATH)/libhdf5-shared.1.8.18.dylib
 
 zmqReader: $(ROBJ)
 	$(CC) -ggdb -o zmqReader $(ROBJ) -L$(NXINSTALL)/lib -lzmq -lsodium

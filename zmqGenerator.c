@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 #include <zmq.h>
 
 #include "nexus2event.h"
+#include "utils.h"
 
 /* #include "config.h" */
 
