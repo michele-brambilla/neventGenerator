@@ -25,17 +25,6 @@ COPY --from=builder /lib64/libpgm-5.2.so.0.0.122 /lib64/libpgm-5.2.so.0.0.122
 COPY --from=builder /lib64/libaec.so.0 /lib64/libaec.so.0
 COPY --from=builder /lib64/libaec.so.0.0.10 libaec.so.0.0.10
 
-
-#COPY --from=builder /lib64/libsodium* /lib64/
 COPY --from=builder neventGenerator/zmqGenerator neventGenerator/zmqGenerator
 COPY --from=builder neventGenerator/rita22012n006190.hdf neventGenerator/rita22012n006190.hdf
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
-# COPY builder:
 
