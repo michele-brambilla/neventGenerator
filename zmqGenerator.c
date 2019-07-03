@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
   */
   zmqContext = zmq_ctx_new();
   pushSocket = zmq_socket(zmqContext, ZMQ_PUSH);
-  snprintf(sockAddress, sizeof(sockAddress), "tcp://127.0.0.1:2911");
+  snprintf(sockAddress, sizeof(sockAddress), "tcp://127.0.0.1:%s",argv[2]);
   rc = zmq_bind(pushSocket, sockAddress);
   rc = zmq_setsockopt(pushSocket, ZMQ_SNDHWM, &hwm_value, sizeof(hwm_value));
 

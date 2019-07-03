@@ -2,7 +2,7 @@
 
 OBJ=neventArray.o zmqGenerator.o nexus2event.o
 
-ROBJ=zmqReader.o
+ROBJ=zmqReader.o cJSON.o
 
 INC = neventArray.h nexus2event.h posix_timers.h md5.h config.h
 
@@ -15,7 +15,7 @@ zmqGenerator: $(OBJ)
 	$(CC) -ggdb -o zmqGenerator $(OBJ) -lhdf5 -lhdf5_hl -lzmq
 
 zmqReader: $(ROBJ)
-	$(CC) -ggdb -o zmqReader $(ROBJ) -lzmq -lsodium
+	$(CC) -ggdb -o zmqReader $(ROBJ) -lzmq -lm 
 
 clean:
 	- rm *.o
