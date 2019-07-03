@@ -3,7 +3,7 @@ FROM centos:7 as builder
 RUN yum install -y epel-release && \
     yum install -y git gcc zeromq-devel hdf5-devel make &&\
     git clone --single-branch --branch use_hdf5 https://github.com/michele-brambilla/neventGenerator.git &&\
-    cd neventGenerator && make zmqGenerator
+    cd neventGenerator && make 
 
 
 FROM centos:7
@@ -26,5 +26,10 @@ COPY --from=builder /lib64/libaec.so.0 /lib64/libaec.so.0
 COPY --from=builder /lib64/libaec.so.0.0.10 libaec.so.0.0.10
 
 COPY --from=builder neventGenerator/zmqGenerator neventGenerator/zmqGenerator
+COPY --from=builder neventGenerator/zmqReader neventGenerator/zmqReader
 COPY --from=builder neventGenerator/rita22012n006190.hdf neventGenerator/rita22012n006190.hdf
 
+WORKDIR /neventGenerator
+
+ENTRYPOINT ["./zmqGenerator"]
+CMD ["rita22012n006190.hdf","5557"]
