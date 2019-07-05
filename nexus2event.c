@@ -106,7 +106,7 @@ static pNEventArray loadAMOR(char *filename) {
   }
   counts = calloc(size, sizeof(int32_t));
   tof = calloc(dim[2], sizeof(int32_t));
-  if (data == NULL || tof == NULL) {
+  if (counts == NULL || tof == NULL) {
     printf("failed to allocate memory for NeXus data\n");
     return NULL;
   }
